@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/byuoitav/divider_sensors/handlers"
+	"github.com/byuoitav/divider-sensors-microservice/handlers"
 )
 
 func main() {
