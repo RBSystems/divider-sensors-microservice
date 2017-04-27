@@ -1,29 +1,29 @@
 package handlers
 
 import (
-	"time"
+	"github.com/byuoitav/divider-sensors-microservice/events"
+	"github.com/byuoitav/event-router-microservice/eventinfrastructure"
 	"gobot.io/x/gobot/drivers/gpio"
 	"gobot.io/x/gobot/platforms/raspi"
 	"log"
-	"github.com/byuoitav/divider-sensors-microservice/events"
-	"github.com/byuoitav/event-router-microservice/eventinfrastructure"
+	"time"
 )
 
 const COUNTER_MAX = 10
 
-func ReadSensors(hostname string, building string, room string, device string, en *eventinfrastructure.EventNode) {
+func ReadSensors(hostname string, building string, room string, device string, pin_num string, preset string, en *eventinfrastructure.EventNode) {
 	//Establish connection to the GPIO
 	r := raspi.NewAdaptor()
-	sensor := gpio.NewDirectPinDriver(r, "7")
+	sensor := gpio.NewDirectPinDriver(r, pin_num)
 	read, err := sensor.DigitalRead()
-	
+
 	//Initialize counter variables
 	times := 0
 	open_count := 0
 	closed_count := 0
 	cur_state := read
 
-	for {	
+	for {
 		for times < 50 {
 			//Read at every interval to assess a status change
 			time.Sleep(100 * time.Millisecond)
@@ -39,10 +39,10 @@ func ReadSensors(hostname string, building string, room string, device string, e
 						//Send open event
 						cur_state = 1
 						log.Printf("Open Max\n")
-						events.OpenedEvent(hostname, building, room, device, en)
+						events.OpenedEvent(hostname, building, room, device, preset, en)
 					}
 				}
-			
+
 				//Dividers read as closed
 				if read == 0 {
 					closed_count += 1
@@ -52,7 +52,7 @@ func ReadSensors(hostname string, building string, room string, device string, e
 						//Send closed event
 						cur_state = 0
 						log.Printf("Closed max\n")
-						events.ClosedEvent(hostname, building, room, device, en)
+						events.ClosedEvent(hostname, building, room, device, preset, en)
 					}
 				}
 				if err != nil {

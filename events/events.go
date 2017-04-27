@@ -1,11 +1,12 @@
 package events
 
 import (
+	ei "github.com/byuoitav/event-router-microservice/eventinfrastructure"
 	"log"
 	"time"
-	ei "github.com/byuoitav/event-router-microservice/eventinfrastructure"
 )
-func OpenedEvent(hostname string, building string, room string, device string, en *ei.EventNode) {
+
+func OpenedEvent(hostname string, building string, room string, device string, preset string, en *ei.EventNode) {
 	var OE ei.Event
 	var open ei.EventInfo
 
@@ -14,7 +15,9 @@ func OpenedEvent(hostname string, building string, room string, device string, e
 	open.EventCause = ei.ROOMDIVISION
 	open.Device = device
 	open.EventInfoKey = "open"
-	open.EventInfoValue = "open"
+	open.EventInfoValue = preset
+
+	log.Printf("%s", open.EventInfoValue)
 
 	OE.Hostname = hostname
 	OE.Timestamp = time.Now().Format(time.RFC3339)
@@ -26,7 +29,7 @@ func OpenedEvent(hostname string, building string, room string, device string, e
 	log.Printf("OPEN EVENT")
 }
 
-func ClosedEvent(hostname string, building string, room string, device string, en *ei.EventNode) {
+func ClosedEvent(hostname string, building string, room string, device string, preset string, en *ei.EventNode) {
 	var CE ei.Event
 	var closed ei.EventInfo
 
@@ -35,7 +38,9 @@ func ClosedEvent(hostname string, building string, room string, device string, e
 	closed.EventCause = ei.ROOMDIVISION
 	closed.Device = device
 	closed.EventInfoKey = "close"
-	closed.EventInfoValue = "closed"
+	closed.EventInfoValue = preset
+
+	log.Printf("%s", closed.EventInfoValue)
 
 	CE.Hostname = hostname
 	CE.Timestamp = time.Now().Format(time.RFC3339)
@@ -47,5 +52,3 @@ func ClosedEvent(hostname string, building string, room string, device string, e
 	log.Printf("CLOSED EVENT")
 
 }
-
-
