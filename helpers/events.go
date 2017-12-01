@@ -1,4 +1,4 @@
-package events
+package helpers
 
 import (
 	"log"
@@ -8,7 +8,7 @@ import (
 	ei "github.com/byuoitav/event-router-microservice/eventinfrastructure"
 )
 
-func OpenedEvent(preset string, en *ei.EventNode) {
+func OpenedEvent(p Pin, en *ei.EventNode) {
 	var OE ei.Event
 	var open ei.EventInfo
 
@@ -23,8 +23,8 @@ func OpenedEvent(preset string, en *ei.EventNode) {
 	open.Requestor = hostname
 	open.EventCause = ei.ROOMDIVISION
 	open.Device = device
-	open.EventInfoKey = "connect"
-	open.EventInfoValue = preset
+	open.EventInfoKey = "disconnect"
+	open.EventInfoValue = p.Preset
 
 	log.Printf("%s", open.EventInfoValue)
 
@@ -35,11 +35,11 @@ func OpenedEvent(preset string, en *ei.EventNode) {
 	OE.Building = building
 	OE.Room = room
 
-	log.Printf("OPEN EVENT")
+	log.Printf("Dividers are OPEN")
 	en.PublishEvent(OE, "DIVISION")
 }
 
-func ClosedEvent(preset string, en *ei.EventNode) {
+func ClosedEvent(p Pin, en *ei.EventNode) {
 	var CE ei.Event
 	var closed ei.EventInfo
 
@@ -54,8 +54,8 @@ func ClosedEvent(preset string, en *ei.EventNode) {
 	closed.Requestor = hostname
 	closed.EventCause = ei.ROOMDIVISION
 	closed.Device = device
-	closed.EventInfoKey = "disconnect"
-	closed.EventInfoValue = preset
+	closed.EventInfoKey = "connect"
+	closed.EventInfoValue = p.Preset
 
 	log.Printf("%s", closed.EventInfoValue)
 
@@ -66,6 +66,6 @@ func ClosedEvent(preset string, en *ei.EventNode) {
 	CE.Building = building
 	CE.Room = room
 
-	log.Printf("CLOSED EVENT")
+	log.Printf("Dividers are CLOSED")
 	en.PublishEvent(CE, "DIVISION")
 }

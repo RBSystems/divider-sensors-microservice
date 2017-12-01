@@ -8,10 +8,24 @@ import (
 )
 
 func main() {
-	filters := []string{eventinfrastructure.RoomDivide}
-	en := eventinfrastructure.NewEventNode("Divider Sensors", "7006", filters, "10.5.34.65:7000")
+	port := ":7006"
+	// router := echo.New()
+	//
+	// //Functionality endpoints
+	//
+	// //Status endpoints
+	//
+	// server := http.Server{
+	// 	Addr:           port,
+	// 	MaxHeaderBytes: 1024 * 10,
+	// }
+	//
+	// router.StartServer(&server)
+
+	filters := []string{}
+	en := eventinfrastructure.NewEventNode("RoomDivide", port, filters, "10.5.34.65:7000")
 
 	var wg sync.WaitGroup
-	handlers.DividerStatus(en, &wg)
+	handlers.StartReading(en, &wg)
 	wg.Wait()
 }

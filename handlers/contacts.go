@@ -7,26 +7,19 @@ import (
 	"sync"
 	"time"
 
-	"github.com/byuoitav/divider-sensors-microservice/events"
+	"github.com/byuoitav/divider-sensors-microservice/helpers"
 	"github.com/byuoitav/event-router-microservice/eventinfrastructure"
 	"gobot.io/x/gobot/drivers/gpio"
 	"gobot.io/x/gobot/platforms/raspi"
 )
 
 const COUNTER_MAX = 10
+const OPEN = helpers.OPEN
+const CLOSED = helpers.CLOSED
 
 const CONFIG = "config.json"
 
-type DividerConfig struct {
-	Pins []Pin `json:"pins"`
-}
-
-type Pin struct {
-	Num    string `json:"num"`
-	Preset string `json:"preset"`
-}
-
-func DividerStatus(en *eventinfrastructure.EventNode, wg *sync.WaitGroup) {
+func StartReading(en *eventinfrastructure.EventNode, wg *sync.WaitGroup) {
 	dc, err := ReadConfig()
 	pinList := dc.Pins
 	if err != nil {
@@ -36,64 +29,65 @@ func DividerStatus(en *eventinfrastructure.EventNode, wg *sync.WaitGroup) {
 
 	wg.Add(len(pinList))
 	for i := range pinList {
-		go ReadSensors(pinList[i].Num, pinList[i].Preset, en, wg)
+		go ReadSensors(pinList[i], en, wg)
 	}
 }
 
-func ReadConfig() (DividerConfig, error) {
+func ReadConfig() (helpers.DividerConfig, error) {
 	body, err := ioutil.ReadFile(CONFIG)
 	if err != nil {
 		log.Printf("Failed to read body from file %s: %s", CONFIG, err)
-		return DividerConfig{}, err
+		return helpers.DividerConfig{}, err
 	}
 
-	var config DividerConfig
+	var config helpers.DividerConfig
 	err = json.Unmarshal(body, &config)
 	if err != nil {
 		log.Printf("Failed to unmarshal body from file %s: %s", CONFIG, err)
-		return DividerConfig{}, err
+		return helpers.DividerConfig{}, err
 	}
 
 	return config, nil
 }
 
-func ReadSensors(pin_num string, preset string, en *eventinfrastructure.EventNode, wg *sync.WaitGroup) {
+func ReadSensors(p helpers.Pin, en *eventinfrastructure.EventNode, wg *sync.WaitGroup) {
 	defer wg.Done()
 	//Establish connection to the GPIO
 	r := raspi.NewAdaptor()
-	sensor := gpio.NewDirectPinDriver(r, pin_num)
+	sensor := gpio.NewDirectPinDriver(r, p.Num)
 	read, err := sensor.DigitalRead()
+
 	//Initialize counter variables
 	times := 0
-	open_count := 0
-	closed_count := 0
-	cur_state := read
+	openCount := 0
+	closedCount := 0
+	curState := read
 	for {
 		for times < 50 {
 			//Read at every interval to assess a status change
 			time.Sleep(100 * time.Millisecond)
 			read, err = sensor.DigitalRead()
 
-			if read != cur_state {
+			if read != curState {
 				//Dividers read as open
-				if read == 1 {
-					open_count += 1
-					closed_count = 0
-					if open_count == COUNTER_MAX {
+				if read == OPEN {
+					openCount += 1
+					closedCount = 0
+					if openCount == COUNTER_MAX {
 						//Send open event
-						cur_state = 1
-						events.OpenedEvent(preset, en)
+						curState = OPEN
+						helpers.Disconnect(p, en)
 					}
 				}
 
 				//Dividers read as closed
-				if read == 0 {
-					closed_count += 1
-					open_count = 0
-					if closed_count == COUNTER_MAX {
+				if read == CLOSED {
+					closedCount += 1
+					openCount = 0
+					if closedCount == COUNTER_MAX {
 						//Send closed event
-						cur_state = 0
-						events.ClosedEvent(preset, en)
+						curState = CLOSED
+						helpers.Connect(p, en)
 					}
 				}
 				if err != nil {
@@ -102,8 +96,31 @@ func ReadSensors(pin_num string, preset string, en *eventinfrastructure.EventNod
 			}
 			times += 1
 		}
-		open_count = 0
-		closed_count = 0
+		openCount = 0
+		closedCount = 0
 		times = 0
 	}
 }
+
+func AllPinStatus() {
+	// dc, err := ReadConfig()
+	// pinList := dc.Pins
+	// if err != nil {
+	// 	log.Printf("Couldn't read pins")
+	// 	return
+	// }
+
+	// for j := range pinList {
+	// 	state := CheckPinStatus(pinList[j])
+	// 	if state == CLOSED {
+	// 		//Something will happen here. Preset and disconnected?
+	// 	}
+	// 	else if state == OPEN {
+	// 		//Preset and connected?
+	// 	}
+	// }
+}
+
+// func CheckPinStatus(p helper.Pin) {
+//
+// }
