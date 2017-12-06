@@ -2,6 +2,7 @@ package helpers
 
 import (
 	"log"
+	"os"
 	"strings"
 	"time"
 
@@ -13,7 +14,7 @@ func OpenedEvent(p Pin, en *ei.EventNode) {
 	var open ei.EventInfo
 
 	//Get Hostname, Building, Room and Device
-	hostname := "ITB-1101-CP5"
+	hostname := os.Getenv("PI_HOSTNAME")
 	roomInfo := strings.Split(hostname, "-")
 	building := roomInfo[0]
 	room := roomInfo[1]
@@ -44,7 +45,7 @@ func ClosedEvent(p Pin, en *ei.EventNode) {
 	var closed ei.EventInfo
 
 	//Get Hostname, Building, Room and Device
-	hostname := "ITB-1101-CP5"
+	hostname := os.Getenv("PI_HOSTNAME")
 	roomInfo := strings.Split(hostname, "-")
 	building := roomInfo[0]
 	room := roomInfo[1]
