@@ -12,8 +12,8 @@ import (
 )
 
 type Status struct {
-	Opened []string `json:"opened,omitempty"`
-	Closed []string `json:"closed,omitempty"`
+	Disconnected []string `json:"disconnected,omitempty"`
+	Connected    []string `json:"connected,omitempty"`
 }
 
 func AllPinStatus(context echo.Context) error {
@@ -29,11 +29,11 @@ func AllPinStatus(context echo.Context) error {
 		state := ReadPinStatus(pinList[j])
 		if state == CLOSED {
 			msg := fmt.Sprintf("%s", pinList[j].Preset)
-			status.Closed = append(status.Closed, msg)
+			status.Connected = append(status.Connected, msg)
 		}
 		if state == OPEN {
 			msg := fmt.Sprintf("%s", pinList[j].Preset)
-			status.Opened = append(status.Opened, msg)
+			status.Disconnected = append(status.Disconnected, msg)
 		}
 		if state == -1 {
 			log.Printf("Cannot read status for pin %s.", pinList[j].Num)
@@ -42,35 +42,6 @@ func AllPinStatus(context echo.Context) error {
 	log.Printf("Success")
 	return context.JSON(http.StatusOK, status)
 }
-
-// func CheckPinStatus(context echo.Context) error {
-// 	dc, err := ReadConfig()
-// 	pinList := dc.Pins
-// 	number := context.Param("number")
-// 	if err != nil {
-// 		log.Printf("Couldn't read pins")
-// 		return context.JSON(http.StatusInternalServerError, err.Error())
-// 	}
-// 	msg := ""
-// 	n := -1
-// 	for j := range pinList {
-// 		if pinList[j].Num == number {
-// 			n = j
-// 			state := ReadPinStatus(pinList[j])
-// 			if state == CLOSED {
-// 				msg = fmt.Sprintf("Rooms %s are disconnected.\n", pinList[j].Preset)
-// 			}
-// 			if state == OPEN {
-// 				msg = fmt.Sprintf("Rooms %s are connected.\n", pinList[j].Preset)
-// 			}
-// 			if state == -1 {
-// 				msg = fmt.Sprintf("Cannot read status for pin %s.\n", pinList[j].Num)
-// 				return context.JSON(http.StatusInternalServerError, err.Error())
-// 			}
-// 		}
-// 	}
-// 	return context.JSON(http.StatusOK, statusevaluators.Input{: fmt.Sprintf("%s:%s", pinList[n].Num, msg)})
-// }
 
 func ReadPinStatus(p helpers.Pin) int {
 	//Establish connection to the GPIO

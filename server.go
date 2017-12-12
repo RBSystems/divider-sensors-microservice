@@ -2,6 +2,7 @@ package main
 
 import (
 	"net/http"
+	"os"
 	"sync"
 
 	"github.com/byuoitav/authmiddleware"
@@ -23,8 +24,7 @@ func main() {
 	//Functionality endpoints
 
 	//Status endpoints
-	secure.GET("/allstatus", handlers.AllPinStatus)
-	//secure.GET("/status/:number", handlers.CheckPinStatus)
+	secure.GET("/status", handlers.AllPinStatus)
 
 	server := http.Server{
 		Addr:           port,
@@ -32,7 +32,7 @@ func main() {
 	}
 
 	filters := []string{}
-	en := eventinfrastructure.NewEventNode("RoomDivide", "7006", filters, "10.5.34.65:7000")
+	en := eventinfrastructure.NewEventNode("RoomDivide", "7006", filters, os.Getenv("EVENT_ROUTER_ADDRESS"))
 
 	var wg sync.WaitGroup
 	handlers.StartReading(en, &wg)

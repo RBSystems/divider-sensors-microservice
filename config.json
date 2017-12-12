@@ -2,13 +2,13 @@
   "pins": [{
             "num": "7",
             "preset": "1,2,3/4,5",
-            "dsp": "10.5.34.149",
+            "dsp": "10.66.76.3",
             "control name": "Wall1State"
           },
           {
             "num": "5",
             "preset": "4,5/6,7",
-            "dsp": "10.5.34.149",
+            "dsp": "10.66.76.3",
             "control name": "Wall2State"
           }]
 }
