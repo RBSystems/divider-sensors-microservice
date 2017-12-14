@@ -1,14 +1,8 @@
 {
   "pins": [{
-            "num": "3",
-            "preset": "1,2,3/4,5",
-            "dsp": "10.66.76.3",
-            "control name": "Wall1State"
-          },
-          {
-            "num": "5",
-            "preset": "4,5/6,7",
-            "dsp": "10.66.76.3",
-            "control name": "Wall2State"
+            "num": "(i.e. '5', not 'BCM 3')",
+            "preset": "(i.e. '1,2,3/4,5')",
+            "dsp": "IP address for the DSP",
+            "control name": "(i.e. 'Wall1State')"
           }]
 }
