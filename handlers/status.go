@@ -27,12 +27,12 @@ func AllPinStatus(context echo.Context) error {
 
 	for j := range pinList {
 		state := ReadPinStatus(pinList[j])
-		if state == CLOSED {
-			msg := fmt.Sprintf("%s", pinList[j].Preset)
+		if state == helpers.CONNECTED {
+			msg := fmt.Sprintf("%v %s", state, pinList[j].Preset)
 			status.Connected = append(status.Connected, msg)
 		}
-		if state == OPEN {
-			msg := fmt.Sprintf("%s", pinList[j].Preset)
+		if state == helpers.DISCONNECTED {
+			msg := fmt.Sprintf("%v %s", state, pinList[j].Preset)
 			status.Disconnected = append(status.Disconnected, msg)
 		}
 		if state == -1 {

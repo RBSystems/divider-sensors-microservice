@@ -4,7 +4,9 @@ After=network.target docker.service
 
 [Service]
 ExecStart=/etc/divider-sensors/divider-sensors-microservice
-Environment="CONTACTS_CONFIG_FILE=/home/pi/Users/code/go/src/github.com/byuoitav/divider-sensors-microservice/config.json"
+Environment="CONTACTS_CONFIG_FILE=/etc/divider-sensors/config.json", "EVENT_ROUTER_ADDRESS=localhost:7000", "LOCAL_ENVIRONMENT=true", "PI_HOSTNAME=ITB-1108-DS1", "DSP_MICROSERVICE_ADDRESS=ITB-1108-CP1.byu.edu"
+StandardOutput=journal
+StandardError=journal
 
 [Install]
 WantedBy=multi-user.target

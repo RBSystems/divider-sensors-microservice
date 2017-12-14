@@ -15,8 +15,6 @@ import (
 )
 
 const COUNTER_MAX = 10
-const OPEN = helpers.OPEN
-const CLOSED = helpers.CLOSED
 
 func StartReading(en *eventinfrastructure.EventNode, wg *sync.WaitGroup) {
 	dc, err := ReadConfig()
@@ -59,8 +57,8 @@ func ReadSensors(p helpers.Pin, en *eventinfrastructure.EventNode, wg *sync.Wait
 
 	//Initialize counter variables
 	times := 0
-	openCount := 0
-	closedCount := 0
+	connectedCount := 0
+	disconnectedCount := 0
 	curState := read
 	for {
 		for times < 50 {
@@ -70,24 +68,24 @@ func ReadSensors(p helpers.Pin, en *eventinfrastructure.EventNode, wg *sync.Wait
 
 			if read != curState {
 				//Dividers read as open
-				if read == OPEN {
-					openCount += 1
-					closedCount = 0
-					if openCount == COUNTER_MAX {
+				if read == helpers.CONNECTED {
+					connectedCount += 1
+					disconnectedCount = 0
+					if connectedCount == COUNTER_MAX {
 						//Send open event
-						curState = OPEN
-						helpers.Disconnect(p, en)
+						curState = helpers.CONNECTED
+						helpers.Connect(p, en)
 					}
 				}
 
 				//Dividers read as closed
-				if read == CLOSED {
-					closedCount += 1
-					openCount = 0
-					if closedCount == COUNTER_MAX {
+				if read == helpers.DISCONNECTED {
+					disconnectedCount += 1
+					connectedCount = 0
+					if disconnectedCount == COUNTER_MAX {
 						//Send closed event
-						curState = CLOSED
-						helpers.Connect(p, en)
+						curState = helpers.DISCONNECTED
+						helpers.Disconnect(p, en)
 					}
 				}
 				if err != nil {
@@ -96,8 +94,8 @@ func ReadSensors(p helpers.Pin, en *eventinfrastructure.EventNode, wg *sync.Wait
 			}
 			times += 1
 		}
-		openCount = 0
-		closedCount = 0
+		connectedCount = 0
+		disconnectedCount = 0
 		times = 0
 	}
 }

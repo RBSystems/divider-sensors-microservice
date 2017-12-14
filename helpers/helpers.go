@@ -4,8 +4,8 @@ import (
 	"github.com/byuoitav/event-router-microservice/eventinfrastructure"
 )
 
-const CLOSED = 0
-const OPEN = 1
+const CONNECTED = 1
+const DISCONNECTED = 0
 
 type DividerConfig struct {
 	Pins []Pin `json:"pins"`
@@ -19,11 +19,11 @@ type Pin struct {
 }
 
 func Connect(p Pin, en *eventinfrastructure.EventNode) {
-	ClosedEvent(p, en)
-	DSPChange(p, CLOSED)
+	ConnectedEvent(p, en)
+	DSPChange(p, CONNECTED)
 }
 
 func Disconnect(p Pin, en *eventinfrastructure.EventNode) {
-	OpenedEvent(p, en)
-	DSPChange(p, OPEN)
+	DisconnectedEvent(p, en)
+	DSPChange(p, DISCONNECTED)
 }

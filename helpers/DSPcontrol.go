@@ -5,19 +5,23 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os"
 )
 
 func DSPChange(p Pin, state int) {
 	client := &http.Client{}
-	//I put in a request bin url for testing since the DSP is in another room, but this will change back to having a DSP address.
-	url := fmt.Sprintf("http://linux-knight.byu.edu:8016/%v/generic/%v/%v", p.DSP, p.ControlName, state)
-	//url := fmt.Sprintf("https://requestb.in/1hyeg4j1")
+
+	url := fmt.Sprintf("http://%s:8016/%v/generic/%v/%v", os.Getenv("DSP_MICROSERVICE_ADDRESS"), p.DSP, p.ControlName, state)
 
 	req, err := http.NewRequest(http.MethodPut, url, bytes.NewReader([]byte{}))
 	if err != nil {
 		// handle error
-		log.Printf("%s", err)
+		log.Printf("%v", err.Error())
 	}
 	_, err = client.Do(req)
+	if err != nil {
+		// handle error
+		log.Printf("%v", err.Error())
+	}
 	return
 }
