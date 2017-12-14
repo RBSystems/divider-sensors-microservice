@@ -37,7 +37,7 @@ func DisconnectedEvent(p Pin, en *ei.EventNode) {
 	DE.Room = room
 
 	log.Printf("Disconnecting these rooms: %s", p.Preset)
-	en.PublishEvent(DE, "DIVISION")
+	en.PublishEvent(DE, ei.RoomDivide)
 }
 
 func ConnectedEvent(p Pin, en *ei.EventNode) {
@@ -68,5 +68,5 @@ func ConnectedEvent(p Pin, en *ei.EventNode) {
 	CE.Room = room
 
 	log.Printf("Connecting these rooms: %s", p.Preset)
-	en.PublishEvent(CE, "DIVISION")
+	en.PublishEvent(CE, ei.RoomDivide)
 }
