@@ -32,7 +32,7 @@ func main() {
 	}
 
 	filters := []string{}
-	en := eventinfrastructure.NewEventNode("RoomDivide", "7006", filters, os.Getenv("EVENT_ROUTER_ADDRESS"))
+	en := eventinfrastructure.NewEventNode("RoomDivide", filters, os.Getenv("EVENT_ROUTER_ADDRESS"))
 
 	var wg sync.WaitGroup
 	handlers.StartReading(en, &wg)
