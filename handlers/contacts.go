@@ -20,7 +20,7 @@ func StartReading(en *eventinfrastructure.EventNode, wg *sync.WaitGroup) {
 	dc, err := ReadConfig()
 	pinList := dc.Pins
 	if err != nil {
-		log.Printf("Aww dang, I couldn't get the pins...")
+		log.Printf("Ah dang, I couldn't get the pins...")
 		return
 	}
 
