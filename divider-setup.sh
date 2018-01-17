@@ -6,10 +6,10 @@ grep -qF "$DSP_MICROSERVICE_ADDRESS" /etc/environment || echo "$DSP_MICROSERVICE
 
 mkdir /etc/divider-sensors
 
-curl -o /etc/divider-sensors/config.json https://raw.githubusercontent.com/byuoitav/divider-sensors-microservice/feature/deployment/config.json
+curl -o /etc/divider-sensors/config.json https://raw.githubusercontent.com/byuoitav/divider-sensors-microservice/master/config.json
 vi /etc/divider-sensors/config.json
 
-curl -o /etc/systemd/system/divider-sensors.service https://raw.githubusercontent.com/byuoitav/divider-sensors-microservice/feature/deployment/divider-sensors.service
+curl -o /etc/systemd/system/divider-sensors.service https://raw.githubusercontent.com/byuoitav/divider-sensors-microservice/master/divider-sensors.service
 wget  https://github.com/byuoitav/divider-sensors-microservice/releases/download/v0.3/divider-sensors-microservice
 chmod 755 divider-sensors-microservice
 mv divider-sensors-microservice /etc/divider-sensors
