@@ -25,6 +25,7 @@ func main() {
 
 	//Status endpoints
 	secure.GET("/status", handlers.AllPinStatus)
+	//secure.GET("/nodestatus")
 
 	server := http.Server{
 		Addr:           port,
