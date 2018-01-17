@@ -1,0 +1,8 @@
+{
+  "pins": [{
+            "num": "(i.e. '5', not 'BCM 3')",
+            "preset": "(i.e. '1,2,3/4,5')",
+            "dsp": "IP address for the DSP",
+            "control name": "(i.e. 'Wall1State')"
+          }]
+}
