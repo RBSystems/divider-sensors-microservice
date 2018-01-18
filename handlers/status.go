@@ -3,44 +3,48 @@ package handlers
 import (
 	"fmt"
 	"log"
-	"net/http"
 
 	"github.com/byuoitav/divider-sensors-microservice/helpers"
-	"github.com/labstack/echo"
+	"github.com/byuoitav/event-router-microservice/eventinfrastructure"
 	"gobot.io/x/gobot/drivers/gpio"
 	"gobot.io/x/gobot/platforms/raspi"
 )
 
 type Status struct {
-	Disconnected []string `json:"disconnected,omitempty"`
-	Connected    []string `json:"connected,omitempty"`
+	Disconnected []string    `json:"disconnected,omitempty"`
+	Connected    []string    `json:"connected,omitempty"`
+	Name         string      `json:"connection name"`
+	Values       interface{} `json:"values"`
 }
 
-func AllPinStatus(context echo.Context) error {
+func AllPinStatus(en *eventinfrastructure.EventNode) Status {
 	dc, err := ReadConfig()
 	pinList := dc.Pins
 	status := Status{}
 	if err != nil {
 		log.Printf("Couldn't read pins")
-		return context.JSON(http.StatusInternalServerError, err.Error())
+		return status
 	}
 
 	for j := range pinList {
 		state := ReadPinStatus(pinList[j])
 		if state == helpers.CONNECTED {
-			msg := fmt.Sprintf("%v %s", state, pinList[j].Preset)
+			msg := fmt.Sprintf("%s", pinList[j].Preset)
 			status.Connected = append(status.Connected, msg)
 		}
 		if state == helpers.DISCONNECTED {
-			msg := fmt.Sprintf("%v %s", state, pinList[j].Preset)
+			msg := fmt.Sprintf("%s", pinList[j].Preset)
 			status.Disconnected = append(status.Disconnected, msg)
 		}
 		if state == -1 {
 			log.Printf("Cannot read status for pin %s.", pinList[j].Num)
 		}
 	}
+
+	status.Name, status.Values = en.Node.GetState()
+
 	log.Printf("Success")
-	return context.JSON(http.StatusOK, status)
+	return status
 }
 
 func ReadPinStatus(p helpers.Pin) int {
