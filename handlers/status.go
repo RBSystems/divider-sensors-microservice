@@ -13,8 +13,8 @@ import (
 type Status struct {
 	Disconnected []string    `json:"disconnected,omitempty"`
 	Connected    []string    `json:"connected,omitempty"`
-	Name         string      `json:"connection name"`
-	Values       interface{} `json:"values"`
+	Name         string      `json:"connection name,omitempty"`
+	Values       interface{} `json:"values,omitempty"`
 }
 
 func AllPinStatus(en *eventinfrastructure.EventNode) Status {
