@@ -29,10 +29,12 @@ func AllPinStatus(en *eventinfrastructure.EventNode) Status {
 	for j := range pinList {
 		state := ReadPinStatus(pinList[j])
 		if state == helpers.CONNECTED {
+			helpers.Connect(pinList[j], en)
 			msg := fmt.Sprintf("%s", pinList[j].Preset)
 			status.Connected = append(status.Connected, msg)
 		}
 		if state == helpers.DISCONNECTED {
+			helpers.Disconnect(pinList[j], en)
 			msg := fmt.Sprintf("%s", pinList[j].Preset)
 			status.Disconnected = append(status.Disconnected, msg)
 		}
