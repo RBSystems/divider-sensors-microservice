@@ -61,7 +61,8 @@ func ReadSensors(p helpers.Pin, en *eventinfrastructure.EventNode, wg *sync.Wait
 	disconnectedCount := 0
 	curState := read
 	for {
-		for times < 50 {
+		//Based on the time.Sleep for .1 seconds, after 300 loops it will have been 5 min.
+		for times < 300 {
 			//Read at every interval to assess a status change
 			time.Sleep(100 * time.Millisecond)
 			read, err = sensor.DigitalRead()
@@ -93,6 +94,16 @@ func ReadSensors(p helpers.Pin, en *eventinfrastructure.EventNode, wg *sync.Wait
 				}
 			}
 			times += 1
+		}
+		//Every 5 min, send out an event of the current state.
+		read, err = sensor.DigitalRead()
+		if read == helpers.CONNECTED {
+			curState = helpers.CONNECTED
+			helpers.Connect(p, en)
+		}
+		if read == helpers.DISCONNECTED {
+			curState = helpers.DISCONNECTED
+			helpers.Disconnect(p, en)
 		}
 		connectedCount = 0
 		disconnectedCount = 0
