@@ -1,0 +1,12 @@
+[Unit]
+Description=Divider Sensors Service
+After=network.target docker.service
+
+[Service]
+ExecStart=/etc/divider-sensors/divider-sensors-microservice
+EnvironmentFile=-/etc/environment
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target
