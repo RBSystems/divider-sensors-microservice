@@ -8,6 +8,7 @@ import (
 	"os"
 )
 
+// DSPChange sends a request to the DSP Microservice for the room to make the necessary audio changes.
 func DSPChange(p Pin, state int) {
 	client := &http.Client{}
 

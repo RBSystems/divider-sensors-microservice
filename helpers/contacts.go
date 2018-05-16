@@ -1,4 +1,4 @@
-package handlers
+package helpers
 
 import (
 	"encoding/json"
@@ -8,48 +8,37 @@ import (
 	"sync"
 	"time"
 
-	"github.com/byuoitav/divider-sensors-microservice/helpers"
-	"github.com/byuoitav/event-router-microservice/eventinfrastructure"
 	"gobot.io/x/gobot/drivers/gpio"
 	"gobot.io/x/gobot/platforms/raspi"
 )
 
-const COUNTER_MAX = 10
+// CounterMax is the maximum number of times that the sensors should read the same number before sending an event.
+const CounterMax = 10
 
-func StartReading(en *eventinfrastructure.EventNode, wg *sync.WaitGroup) {
-	dc, err := ReadConfig()
-	pinList := dc.Pins
-	if err != nil {
-		log.Printf("Ah dang, I couldn't get the pins...")
-		return
-	}
-
-	wg.Add(len(pinList))
-	for i := range pinList {
-		go ReadSensors(pinList[i], en, wg)
-	}
-}
-
-func ReadConfig() (helpers.DividerConfig, error) {
+// ReadConfig reads the file that determines the configuration for each pin to be read from.
+func ReadConfig() (DividerConfig, error) {
 	CONFIG := os.Getenv("CONTACTS_CONFIG_FILE")
+
 	body, err := ioutil.ReadFile(CONFIG)
 	if err != nil {
 		log.Printf("Failed to read body from file %s: %s", CONFIG, err)
-		return helpers.DividerConfig{}, err
+		return DividerConfig{}, err
 	}
 
-	var config helpers.DividerConfig
+	var config DividerConfig
+
 	err = json.Unmarshal(body, &config)
 	if err != nil {
 		log.Printf("Failed to unmarshal body from file %s: %s", CONFIG, err)
-		return helpers.DividerConfig{}, err
+		return DividerConfig{}, err
 	}
 
 	return config, nil
 }
 
-func ReadSensors(p helpers.Pin, en *eventinfrastructure.EventNode, wg *sync.WaitGroup) {
+func readSensors(p Pin, wg *sync.WaitGroup) {
 	defer wg.Done()
+
 	//Establish connection to the GPIO
 	r := raspi.NewAdaptor()
 	sensor := gpio.NewDirectPinDriver(r, p.Num)
@@ -60,6 +49,8 @@ func ReadSensors(p helpers.Pin, en *eventinfrastructure.EventNode, wg *sync.Wait
 	connectedCount := 0
 	disconnectedCount := 0
 	curState := read
+
+	// Endlessly read
 	for {
 		for times < 50 {
 			//Read at every interval to assess a status change
@@ -68,32 +59,37 @@ func ReadSensors(p helpers.Pin, en *eventinfrastructure.EventNode, wg *sync.Wait
 
 			if read != curState {
 				//Dividers read as open
-				if read == helpers.CONNECTED {
-					connectedCount += 1
+				if read == CONNECTED {
+
+					connectedCount++
 					disconnectedCount = 0
-					if connectedCount == COUNTER_MAX {
+
+					if connectedCount == CounterMax {
 						//Send open event
-						curState = helpers.CONNECTED
-						helpers.Connect(p, en)
+						curState = CONNECTED
+						Connect(p)
 					}
 				}
 
 				//Dividers read as closed
-				if read == helpers.DISCONNECTED {
-					disconnectedCount += 1
+				if read == DISCONNECTED {
+
+					disconnectedCount++
 					connectedCount = 0
-					if disconnectedCount == COUNTER_MAX {
+
+					if disconnectedCount == CounterMax {
 						//Send closed event
-						curState = helpers.DISCONNECTED
-						helpers.Disconnect(p, en)
+						curState = DISCONNECTED
+						Disconnect(p)
 					}
 				}
 				if err != nil {
 					log.Printf("Something went wrong\n")
 				}
 			}
-			times += 1
+			times++
 		}
+		// Reset counters
 		connectedCount = 0
 		disconnectedCount = 0
 		times = 0

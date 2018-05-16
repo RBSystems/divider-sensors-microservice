@@ -1,29 +1,49 @@
 package helpers
 
 import (
+	"log"
+	"sync"
+
 	"github.com/byuoitav/event-router-microservice/eventinfrastructure"
 )
 
+// CONNECTED represents the signal sent by the sensors when the rooms are connected.
 const CONNECTED = 1
+
+// DISCONNECTED represents the signal sent by the sensors when the rooms are disconnected.
 const DISCONNECTED = 0
 
-type DividerConfig struct {
-	Pins []Pin `json:"pins"`
+// EN is the EventNode object used to publish events.
+var EN *eventinfrastructure.EventNode
+
+// SetEventNode sets the EventNode object used by the microservice.
+func SetEventNode(en *eventinfrastructure.EventNode) {
+	EN = en
 }
 
-type Pin struct {
-	Num         string `json:"num"`
-	Preset      string `json:"preset"`
-	DSP         string `json:"dsp"`
-	ControlName string `json:"control name"`
+// StartReading sets up which pins to read from, and begins reading.
+func StartReading(wg *sync.WaitGroup) {
+	dc, err := ReadConfig()
+	pinList := dc.Pins
+	if err != nil {
+		log.Printf("Ah dang, I couldn't get the pins...")
+		return
+	}
+
+	wg.Add(len(pinList))
+	for i := range pinList {
+		go readSensors(pinList[i], wg)
+	}
 }
 
-func Connect(p Pin, en *eventinfrastructure.EventNode) {
-	ConnectedEvent(p, en)
+// Connect processes all changes that need to happen when the rooms are connected.
+func Connect(p Pin) {
+	ConnectedEvent(p)
 	DSPChange(p, CONNECTED)
 }
 
-func Disconnect(p Pin, en *eventinfrastructure.EventNode) {
-	DisconnectedEvent(p, en)
+// Disconnect processes all changes that need to happen when the rooms are disconnected.
+func Disconnect(p Pin) {
+	DisconnectedEvent(p)
 	DSPChange(p, DISCONNECTED)
 }
