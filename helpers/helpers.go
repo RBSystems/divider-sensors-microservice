@@ -4,7 +4,7 @@ import (
 	"log"
 	"sync"
 
-	"github.com/byuoitav/event-router-microservice/eventinfrastructure"
+	"github.com/byuoitav/common/events"
 )
 
 // CONNECTED represents the signal sent by the sensors when the rooms are connected.
@@ -14,10 +14,10 @@ const CONNECTED = 1
 const DISCONNECTED = 0
 
 // EN is the EventNode object used to publish events.
-var EN *eventinfrastructure.EventNode
+var EN *events.EventNode
 
 // SetEventNode sets the EventNode object used by the microservice.
-func SetEventNode(en *eventinfrastructure.EventNode) {
+func SetEventNode(en *events.EventNode) {
 	EN = en
 }
 

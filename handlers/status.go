@@ -3,21 +3,23 @@ package handlers
 import (
 	"fmt"
 	"log"
+	"net/http"
+
+	"github.com/labstack/echo"
 
 	"github.com/byuoitav/divider-sensors-microservice/helpers"
-	"github.com/byuoitav/event-router-microservice/eventinfrastructure"
 	"gobot.io/x/gobot/drivers/gpio"
 	"gobot.io/x/gobot/platforms/raspi"
 )
 
 // AllPinStatus builds the Status object with the information about the state of the dividers.
-func AllPinStatus(en *eventinfrastructure.EventNode) helpers.Status {
+func AllPinStatus(context echo.Context) error {
 	dc, err := helpers.ReadConfig()
 	pinList := dc.Pins
 	status := helpers.Status{}
 	if err != nil {
 		log.Printf("Couldn't read pins")
-		return status
+		return context.JSON(http.StatusInternalServerError, err.Error())
 	}
 
 	for j := range pinList {
@@ -34,14 +36,15 @@ func AllPinStatus(en *eventinfrastructure.EventNode) helpers.Status {
 		}
 
 		if state == -1 {
-			log.Printf("Cannot read status for pin %s.", pinList[j].Num)
+			msg := fmt.Sprintf("Cannot read status for pin %s.", pinList[j].Num)
+			status.Broken = append(status.Broken, msg)
 		}
 	}
 
-	status.Name, status.Values = en.Node.GetState()
+	status.Name, status.Values = helpers.EN.Node.GetState()
 
 	log.Printf("Success")
-	return status
+	return context.JSON(http.StatusOK, status)
 }
 
 // ReadPinStatus reads the status for an individual pin.

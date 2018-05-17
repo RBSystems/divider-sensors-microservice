@@ -17,6 +17,7 @@ type Pin struct {
 type Status struct {
 	Disconnected []string    `json:"disconnected,omitempty"`
 	Connected    []string    `json:"connected,omitempty"`
+	Broken       []string    `json:"broken,omitempty"`
 	Name         string      `json:"connection name,omitempty"`
 	Values       interface{} `json:"values,omitempty"`
 }

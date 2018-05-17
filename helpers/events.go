@@ -6,13 +6,13 @@ import (
 	"strings"
 	"time"
 
-	ei "github.com/byuoitav/event-router-microservice/eventinfrastructure"
+	"github.com/byuoitav/common/events"
 )
 
 // ConnectedEvent builds and publishes an event to the EventRouter.
 func ConnectedEvent(p Pin) {
-	var CE ei.Event
-	var con ei.EventInfo
+	var CE events.Event
+	var con events.EventInfo
 
 	//Get Hostname, Building, Room and Device
 	hostname := os.Getenv("PI_HOSTNAME")
@@ -21,9 +21,9 @@ func ConnectedEvent(p Pin) {
 	room := roomInfo[1]
 	device := roomInfo[2]
 
-	con.Type = ei.DIVISION
+	con.Type = events.DIVISION
 	con.Requestor = hostname
-	con.EventCause = ei.ROOMDIVISION
+	con.EventCause = events.ROOMDIVISION
 	con.Device = device
 	con.EventInfoKey = "connect"
 	con.EventInfoValue = p.Preset
@@ -38,13 +38,13 @@ func ConnectedEvent(p Pin) {
 	CE.Room = room
 
 	log.Printf("Connecting these rooms: %s", p.Preset)
-	EN.PublishEvent(CE, ei.RoomDivide)
+	EN.PublishEvent(events.RoomDivide, CE)
 }
 
 // DisconnectedEvent builds and publishes an event to the EventRouter.
 func DisconnectedEvent(p Pin) {
-	var DE ei.Event
-	var disc ei.EventInfo
+	var DE events.Event
+	var disc events.EventInfo
 
 	//Get Hostname, Building, Room and Device
 	hostname := os.Getenv("PI_HOSTNAME")
@@ -53,9 +53,9 @@ func DisconnectedEvent(p Pin) {
 	room := roomInfo[1]
 	device := roomInfo[2]
 
-	disc.Type = ei.DIVISION
+	disc.Type = events.DIVISION
 	disc.Requestor = hostname
-	disc.EventCause = ei.ROOMDIVISION
+	disc.EventCause = events.ROOMDIVISION
 	disc.Device = device
 	disc.EventInfoKey = "disconnect"
 	disc.EventInfoValue = p.Preset
@@ -70,5 +70,5 @@ func DisconnectedEvent(p Pin) {
 	DE.Room = room
 
 	log.Printf("Disconnecting these rooms: %s", p.Preset)
-	EN.PublishEvent(DE, ei.RoomDivide)
+	EN.PublishEvent(events.RoomDivide, DE)
 }

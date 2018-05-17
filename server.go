@@ -6,14 +6,12 @@ import (
 	"sync"
 
 	"github.com/byuoitav/authmiddleware"
+	"github.com/byuoitav/common/events"
 	"github.com/byuoitav/divider-sensors-microservice/handlers"
 	"github.com/byuoitav/divider-sensors-microservice/helpers"
-	"github.com/byuoitav/event-router-microservice/eventinfrastructure"
 	"github.com/labstack/echo"
 	"github.com/labstack/echo/middleware"
 )
-
-var en *eventinfrastructure.EventNode
 
 func main() {
 	port := ":8200"
@@ -30,18 +28,13 @@ func main() {
 	}
 
 	filters := []string{}
-	helpers.SetEventNode(eventinfrastructure.NewEventNode("RoomDivide", filters, os.Getenv("EVENT_ROUTER_ADDRESS")))
+	helpers.SetEventNode(events.NewEventNode("RoomDivide", os.Getenv("EVENT_ROUTER_ADDRESS"), filters))
 
 	//Status endpoints
-	secure.GET("/status", state)
+	secure.GET("/status", handlers.AllPinStatus)
 
 	var wg sync.WaitGroup
 	helpers.StartReading(&wg)
 
 	router.StartServer(&server)
-}
-
-func state(context echo.Context) error {
-	var status helpers.Status = handlers.AllPinStatus(en)
-	return context.JSON(http.StatusOK, status)
 }
