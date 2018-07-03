@@ -1,8 +1,64 @@
 {
-  "pins": [{
-            "num": "(i.e. '5', not 'BCM 3')",
-            "preset": "(i.e. '1,2,3/4,5')",
-            "dsp": "IP address for the DSP",
-            "control name": "(i.e. 'Wall1State')"
-          }]
+  "pins": [
+    {
+      "num": "(i.e. '5', not 'BCM 3')",
+      "preset": "(i.e. '1,2,3/4,5')",
+      "dsp": "IP address for the DSP",
+      "control name": "(i.e. 'Wall1State')"
+    }
+  ],
+  "connect": [
+    {
+      "method": "PUT",
+      "port": 8000,
+      "host": "ITB-1108-CP1.byu.edu",
+      "endpoint": "buildings/ITB/rooms/1108",
+      "body": {
+        "displays": [
+          {
+            "name": "D2",
+            "power": "on",
+            "input": "HDMI1",
+            "blanked": false
+          },
+          {
+            "name": "D3",
+            "power": "on",
+            "input": "HDMI8",
+            "blanked": false
+          },
+          {
+            "name": "D4",
+            "power": "on",
+            "input": "HDMI3",
+            "blanked": false
+          }
+        ]
+      }
+    }
+  ],
+  "disconnect": [
+    {
+      "method": "PUT",
+      "port": 8000,
+      "host": "ITB-1108-CP1.byu.edu",
+      "endpoint": "buildings/ITB/rooms/1108",
+      "body": {
+        "displays": [
+          {
+            "name": "D2",
+            "power": "standby"
+          },
+          {
+            "name": "D3",
+            "power": "standby"
+          },
+          {
+            "name": "D4",
+            "power": "standby"
+          }
+        ]
+      }
+    }
+  ]
 }
