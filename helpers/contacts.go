@@ -67,7 +67,7 @@ func readSensors(p Pin, wg *sync.WaitGroup) {
 					if connectedCount == CounterMax {
 						//Send open event
 						curState = CONNECTED
-						Connect(p)
+						go Connect(p)
 					}
 				}
 
@@ -80,7 +80,7 @@ func readSensors(p Pin, wg *sync.WaitGroup) {
 					if disconnectedCount == CounterMax {
 						//Send closed event
 						curState = DISCONNECTED
-						Disconnect(p)
+						go Disconnect(p)
 					}
 				}
 				if err != nil {

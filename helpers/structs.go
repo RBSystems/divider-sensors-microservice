@@ -31,7 +31,7 @@ type Status struct {
 // Request contains the information as to what information will be pulled in a room
 type Request struct {
 	Method   string                 `json:"method"`
-	Port     string                 `json:"port"`
+	Port     int                    `json:"port"`
 	Host     string                 `json:"host"`
 	Endpoint string                 `json:"endpoint"`
 	Body     map[string]interface{} `json:"body"`
