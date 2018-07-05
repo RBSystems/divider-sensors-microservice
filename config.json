@@ -60,5 +60,25 @@
         ]
       }
     }
+  ],
+  "connectEvents": [
+      {
+          "type": 7,
+          "requestor": "ITB-1108-DS1.byu.edu",
+          "eventCause": 5,
+          "device": "ITB-1101-CP1",
+          "eventInfoKey": "preset-switch",
+          "eventInfoValue": "<name of preset>"
+      }
+  ],
+  "disconnectEvents": [
+      {
+          "type": 7,
+          "requestor": "ITB-1108-DS1.byu.edu",
+          "eventCause": 5,
+          "device": "ITB-1101-CP1",
+          "eventInfoKey": "preset-switch",
+          "eventInfoValue": "<name of other preset>"
+      }
   ]
 }

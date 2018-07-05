@@ -1,12 +1,12 @@
 package helpers
 
 import (
-	"log"
 	"os"
 	"strings"
 	"time"
 
 	"github.com/byuoitav/common/events"
+	"github.com/byuoitav/common/log"
 )
 
 // ConnectedEvent builds and publishes an event to the EventRouter.
@@ -28,8 +28,6 @@ func ConnectedEvent(p Pin) {
 	con.EventInfoKey = "connect"
 	con.EventInfoValue = p.Preset
 
-	log.Printf("%s", con.EventInfoValue)
-
 	CE.Hostname = hostname
 	CE.Timestamp = time.Now().Format(time.RFC3339)
 	CE.LocalEnvironment = true
@@ -37,7 +35,7 @@ func ConnectedEvent(p Pin) {
 	CE.Building = building
 	CE.Room = room
 
-	log.Printf("Connecting these rooms: %s", p.Preset)
+	log.L.Debugf("Connecting these rooms: %s", p.Preset)
 	EN.PublishEvent(events.RoomDivide, CE)
 }
 
@@ -60,8 +58,6 @@ func DisconnectedEvent(p Pin) {
 	disc.EventInfoKey = "disconnect"
 	disc.EventInfoValue = p.Preset
 
-	log.Printf("%s", disc.EventInfoValue)
-
 	DE.Hostname = hostname
 	DE.Timestamp = time.Now().Format(time.RFC3339)
 	DE.LocalEnvironment = true
@@ -69,6 +65,6 @@ func DisconnectedEvent(p Pin) {
 	DE.Building = building
 	DE.Room = room
 
-	log.Printf("Disconnecting these rooms: %s", p.Preset)
+	log.L.Debugf("Disconnecting these rooms: %s", p.Preset)
 	EN.PublishEvent(events.RoomDivide, DE)
 }

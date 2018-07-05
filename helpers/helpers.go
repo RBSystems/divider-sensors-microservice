@@ -4,6 +4,10 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
+	"os"
+	"strings"
+	"time"
 
 	"github.com/byuoitav/common/log"
 
@@ -22,6 +26,7 @@ const DISCONNECTED = 0
 // EN is the EventNode object used to publish events.
 var EN *events.EventNode
 
+// DC is the divider config for this pi
 var DC DividerConfig
 
 // SetEventNode sets the EventNode object used by the microservice.
@@ -31,12 +36,15 @@ func SetEventNode(en *events.EventNode) {
 
 // StartReading sets up which pins to read from, and begins reading.
 func StartReading(wg *sync.WaitGroup) {
-	DC, err := ReadConfig()
+	var err error
+	DC, err = ReadConfig()
 	pinList := DC.Pins
 	if err != nil {
 		log.L.Error("Ah dang, I couldn't get the pins...")
 		return
 	}
+
+	log.L.Debugf("Divider Configuration: %+v", DC)
 
 	wg.Add(len(pinList))
 	for i := range pinList {
@@ -46,48 +54,100 @@ func StartReading(wg *sync.WaitGroup) {
 
 // Connect processes all changes that need to happen when the rooms are connected.
 func Connect(p Pin) {
-	ConnectedEvent(p)
-	DSPChange(p, CONNECTED)
+	log.L.Infof("Sensors connected")
+	go ConnectedEvent(p)
+	go DSPChange(p, CONNECTED)
+
 	for _, req := range DC.Connect {
-		MakeRequest(req)
+		go MakeRequest(req)
+	}
+
+	for _, event := range DC.ConnectEvents {
+		go SendEvent(event)
 	}
 }
 
 // Disconnect processes all changes that need to happen when the rooms are disconnected.
 func Disconnect(p Pin) {
-	DisconnectedEvent(p)
-	DSPChange(p, DISCONNECTED)
-	log.L.Infof("Trying to Disconnect")
+	log.L.Infof("Sensors disconnected")
+	go DisconnectedEvent(p)
+	go DSPChange(p, DISCONNECTED)
+
 	for _, req := range DC.Disconnect {
-		MakeRequest(req)
+		go MakeRequest(req)
+	}
+
+	for _, event := range DC.DisconnectEvents {
+		go SendEvent(event)
 	}
 }
 
 // MakeRequest makes a request, WHAAAA????
 func MakeRequest(r Request) error {
-	client := &http.Client{}
+	log.L.Infof("Making request: %+s", r)
 
-	url := fmt.Sprintf("http://%s:%s/%v/", r.Host, r.Port, r.Endpoint)
+	client := &http.Client{}
+	url := fmt.Sprintf("http://%v:%v/%v/", r.Host, r.Port, r.Endpoint)
 
 	body, err := json.Marshal(r.Body)
 	if err != nil {
 		log.L.Errorf("Failed to marshal body. ERROR: %s", err.Error())
 		return err
 	}
-	Req, err := http.NewRequest(r.Method, url, bytes.NewReader(body))
+
+	req, err := http.NewRequest(r.Method, url, bytes.NewReader(body))
 	if err != nil {
 		log.L.Errorf("Failed to make request. ERROR: %s", err.Error())
 		return err
 	}
+	req.Header.Add("content-type", "application/json")
 
-	Resp, err := client.Do(Req)
+	resp, err := client.Do(req)
 	if err != nil {
 		log.L.Errorf("Failed to send request. ERROR: %s", err.Error())
 		return err
 	}
+	defer resp.Body.Close()
 
-	if Resp.StatusCode/100 != 2 {
-		log.L.Errorf("NON 200 RESPONSE!!!. ERROR: %s", err.Error())
+	respBody, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		log.L.Errorf("failed to read response body: %s", err)
+		return err
+	}
+
+	if resp.StatusCode/100 != 2 {
+		log.L.Errorf("NON 200 RESPONSE!!!. response code: %v. response body: %s", resp.StatusCode, respBody)
+		return err
+	}
+
+	log.L.Debugf("response body: %s", respBody)
+	return nil
+}
+
+// SendEvent sends an arbitrary event info
+func SendEvent(e events.EventInfo) error {
+	log.L.Infof("Sending event: %+s", e)
+
+	hostname := os.Getenv("PI_HOSTNAME")
+	roomInfo := strings.Split(hostname, "-")
+	building := roomInfo[0]
+	room := roomInfo[1]
+
+	// build the event
+	event := events.Event{
+		Hostname:         hostname,
+		Timestamp:        time.Now().Format(time.RFC3339),
+		LocalEnvironment: true, // ?
+		Event:            e,
+		Building:         building,
+		Room:             room,
+	}
+
+	// send the event
+	// TODO (?) make a routing table for this type -> the ui's
+	err := EN.PublishEvent(events.RoomDivide, event)
+	if err != nil {
+		log.L.Errorf("failed to publish event: %s", err)
 		return err
 	}
 
