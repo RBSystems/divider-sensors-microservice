@@ -4,6 +4,9 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"os"
+	"strings"
+	"time"
 
 	"github.com/byuoitav/common/log"
 
@@ -22,6 +25,7 @@ const DISCONNECTED = 0
 // EN is the EventNode object used to publish events.
 var EN *events.EventNode
 
+// DC is the divider config for this pi
 var DC DividerConfig
 
 // SetEventNode sets the EventNode object used by the microservice.
@@ -48,8 +52,13 @@ func StartReading(wg *sync.WaitGroup) {
 func Connect(p Pin) {
 	ConnectedEvent(p)
 	DSPChange(p, CONNECTED)
+
 	for _, req := range DC.Connect {
 		MakeRequest(req)
+	}
+
+	for _, event := range DC.ConnectEvents {
+		SendEvent(event)
 	}
 }
 
@@ -57,9 +66,13 @@ func Connect(p Pin) {
 func Disconnect(p Pin) {
 	DisconnectedEvent(p)
 	DSPChange(p, DISCONNECTED)
-	log.L.Infof("Trying to Disconnect")
+
 	for _, req := range DC.Disconnect {
 		MakeRequest(req)
+	}
+
+	for _, event := range DC.DisconnectEvents {
+		SendEvent(event)
 	}
 }
 
@@ -90,6 +103,30 @@ func MakeRequest(r Request) error {
 		log.L.Errorf("NON 200 RESPONSE!!!. ERROR: %s", err.Error())
 		return err
 	}
+
+	return nil
+}
+
+// SendEvent sends an arbitrary event info
+func SendEvent(e events.EventInfo) error {
+	hostname := os.Getenv("PI_HOSTNAME")
+	roomInfo := strings.Split(hostname, "-")
+	building := roomInfo[0]
+	room := roomInfo[1]
+
+	// build the event
+	event := events.Event{
+		Hostname:         hostname,
+		Timestamp:        time.Now().Format(time.RFC3339),
+		LocalEnvironment: true, // ?
+		Event:            e,
+		Building:         building,
+		Room:             room,
+	}
+
+	// send the event
+	// TODO (?) make a routing table for this type -> the ui's
+	EN.PublishEvent(events.RoomDivide, event)
 
 	return nil
 }

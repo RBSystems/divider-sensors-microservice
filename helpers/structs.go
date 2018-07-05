@@ -1,10 +1,14 @@
 package helpers
 
+import "github.com/byuoitav/common/events"
+
 // DividerConfig contains the information for how each pin is configured.
 type DividerConfig struct {
-	Pins       []Pin     `json:"pins"`
-	Connect    []Request `json:"connect"`
-	Disconnect []Request `json:"disconnect"`
+	Pins             []Pin              `json:"pins"`
+	Connect          []Request          `json:"connect"`
+	Disconnect       []Request          `json:"disconnect"`
+	ConnectEvents    []events.EventInfo `json:"connectEvents"`
+	DisconnectEvents []events.EventInfo `json:"disconnectEvents"`
 }
 
 // Pin lists the configuration for this specific pin.
