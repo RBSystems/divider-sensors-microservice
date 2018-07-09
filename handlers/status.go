@@ -1,12 +1,14 @@
 package handlers
 
 import (
+	"errors"
 	"fmt"
-	"log"
 	"net/http"
+	"strings"
 
 	"github.com/labstack/echo"
 
+	"github.com/byuoitav/common/log"
 	"github.com/byuoitav/divider-sensors-microservice/helpers"
 	"gobot.io/x/gobot/drivers/gpio"
 	"gobot.io/x/gobot/platforms/raspi"
@@ -18,7 +20,7 @@ func AllPinStatus(context echo.Context) error {
 	pinList := dc.Pins
 	status := helpers.Status{}
 	if err != nil {
-		log.Printf("Couldn't read pins")
+		log.L.Errorf("Couldn't read pins")
 		return context.JSON(http.StatusInternalServerError, err.Error())
 	}
 
@@ -43,7 +45,7 @@ func AllPinStatus(context echo.Context) error {
 
 	status.Name, status.Values = helpers.EN.Node.GetState()
 
-	log.Printf("Success")
+	log.L.Debugf("Success")
 	return context.JSON(http.StatusOK, status)
 }
 
@@ -60,4 +62,44 @@ func ReadPinStatus(p helpers.Pin) int {
 	}
 
 	return read
+}
+
+// PresetForHostname returns the current preset a specific hostname should be on
+func PresetForHostname(context echo.Context) error {
+	hostname := context.Param("hostname")
+
+	if len(hostname) == 0 {
+		return errors.New("must include a hostname")
+	}
+
+	dc, err := helpers.ReadConfig()
+	pinList := dc.Pins
+	if err != nil {
+		log.L.Errorf("Couldn't read pins")
+		return context.JSON(http.StatusInternalServerError, err)
+	}
+
+	// this endpoint is currently only supported on rooms with one pin
+	if len(pinList) == 0 || len(pinList) > 1 {
+		return context.JSON(http.StatusInternalServerError, fmt.Sprintf("not suppored in this room"))
+	}
+
+	state := ReadPinStatus(pinList[0])
+	if state == helpers.CONNECTED {
+		for _, connectEvent := range dc.ConnectEvents {
+			if strings.EqualFold(connectEvent.Device, hostname) {
+				return context.JSON(http.StatusOK, connectEvent.EventInfoValue)
+			}
+		}
+		return context.JSON(http.StatusInternalServerError, "Pins are connected, but no preset was found for this hostname.")
+	} else if state == helpers.DISCONNECTED {
+		for _, disconnectEvent := range dc.DisconnectEvents {
+			if strings.EqualFold(disconnectEvent.Device, hostname) {
+				return context.JSON(http.StatusOK, disconnectEvent.EventInfoValue)
+			}
+		}
+		return context.JSON(http.StatusInternalServerError, "Pins are disconnected, but no preset was found for this hostname.")
+	}
+
+	return context.JSON(http.StatusInternalServerError, fmt.Sprintf("cannot read status for pin %v.", pinList[0].Num))
 }

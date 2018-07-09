@@ -33,6 +33,7 @@ func main() {
 
 	//Status endpoints
 	secure.GET("/status", handlers.AllPinStatus)
+	secure.GET("/preset/:hostname", handlers.PresetForHostname)
 
 	var wg sync.WaitGroup
 	helpers.StartReading(&wg)
