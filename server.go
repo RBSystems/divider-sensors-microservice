@@ -6,7 +6,7 @@ import (
 	"sync"
 
 	"github.com/byuoitav/authmiddleware"
-	"github.com/byuoitav/common/events"
+	"github.com/byuoitav/common/v2/events"
 	"github.com/byuoitav/divider-sensors-microservice/handlers"
 	"github.com/byuoitav/divider-sensors-microservice/helpers"
 	"github.com/labstack/echo"

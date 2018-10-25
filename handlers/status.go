@@ -87,15 +87,15 @@ func PresetForHostname(context echo.Context) error {
 	state := ReadPinStatus(pinList[0])
 	if state == helpers.CONNECTED {
 		for _, connectEvent := range dc.ConnectEvents {
-			if strings.EqualFold(connectEvent.Device, hostname) {
-				return context.JSON(http.StatusOK, connectEvent.EventInfoValue)
+			if strings.EqualFold(connectEvent.TargetDevice.DeviceID, hostname) {
+				return context.JSON(http.StatusOK, connectEvent.Value)
 			}
 		}
 		return context.JSON(http.StatusInternalServerError, "Pins are connected, but no preset was found for this hostname.")
 	} else if state == helpers.DISCONNECTED {
 		for _, disconnectEvent := range dc.DisconnectEvents {
-			if strings.EqualFold(disconnectEvent.Device, hostname) {
-				return context.JSON(http.StatusOK, disconnectEvent.EventInfoValue)
+			if strings.EqualFold(disconnectEvent.TargetDevice.DeviceID, hostname) {
+				return context.JSON(http.StatusOK, disconnectEvent.Value)
 			}
 		}
 		return context.JSON(http.StatusInternalServerError, "Pins are disconnected, but no preset was found for this hostname.")

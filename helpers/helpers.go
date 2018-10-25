@@ -5,16 +5,13 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
-	"os"
-	"strings"
-	"time"
 
 	"github.com/byuoitav/common/log"
 
 	"net/http"
 	"sync"
 
-	"github.com/byuoitav/common/events"
+	"github.com/byuoitav/common/v2/events"
 )
 
 // CONNECTED represents the signal sent by the sensors when the rooms are connected.
@@ -125,27 +122,12 @@ func MakeRequest(r Request) error {
 }
 
 // SendEvent sends an arbitrary event info
-func SendEvent(e events.EventInfo) error {
+func SendEvent(e events.Event) error {
 	log.L.Infof("Sending event: %+s", e)
-
-	hostname := os.Getenv("PI_HOSTNAME")
-	roomInfo := strings.Split(hostname, "-")
-	building := roomInfo[0]
-	room := roomInfo[1]
-
-	// build the event
-	event := events.Event{
-		Hostname:         hostname,
-		Timestamp:        time.Now().Format(time.RFC3339),
-		LocalEnvironment: true, // ?
-		Event:            e,
-		Building:         building,
-		Room:             room,
-	}
 
 	// send the event
 	// TODO (?) make a routing table for this type -> the ui's
-	err := EN.PublishEvent(events.RoomDivide, event)
+	err := EN.PublishEvent(events.RoomDivide, e)
 	if err != nil {
 		log.L.Errorf("failed to publish event: %s", err)
 		return err

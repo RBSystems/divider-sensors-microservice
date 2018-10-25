@@ -5,66 +5,72 @@ import (
 	"strings"
 	"time"
 
-	"github.com/byuoitav/common/events"
 	"github.com/byuoitav/common/log"
+	"github.com/byuoitav/common/v2/events"
 )
 
 // ConnectedEvent builds and publishes an event to the EventRouter.
 func ConnectedEvent(p Pin) {
-	var CE events.Event
-	var con events.EventInfo
-
 	//Get Hostname, Building, Room and Device
 	hostname := os.Getenv("PI_HOSTNAME")
 	roomInfo := strings.Split(hostname, "-")
 	building := roomInfo[0]
 	room := roomInfo[1]
-	device := roomInfo[2]
 
-	con.Type = events.DIVISION
-	con.Requestor = hostname
-	con.EventCause = events.ROOMDIVISION
-	con.Device = device
-	con.EventInfoKey = "connect"
-	con.EventInfoValue = p.Preset
+	roomStuff := events.BasicRoomInfo{
+		BuildingID: building,
+		RoomID:     room,
+	}
 
-	CE.Hostname = hostname
-	CE.Timestamp = time.Now().Format(time.RFC3339)
-	CE.LocalEnvironment = true
-	CE.Event = con
-	CE.Building = building
-	CE.Room = room
+	deviceInfo := events.BasicDeviceInfo{
+		BasicRoomInfo: roomStuff,
+		DeviceID:      hostname,
+	}
+
+	event := events.Event{
+		GeneratingSystem: hostname,
+		Timestamp:        time.Now(),
+		AffectedRoom:     roomStuff,
+		TargetDevice:     deviceInfo,
+		Key:              "connect",
+		Value:            p.Preset,
+		User:             hostname,
+	}
+
+	event.EventTags = append(event.EventTags, events.RoomDivide, "LocalEnv")
 
 	log.L.Debugf("Connecting these rooms: %s", p.Preset)
-	EN.PublishEvent(events.RoomDivide, CE)
+	EN.PublishEvent(events.RoomDivide, event)
 }
 
 // DisconnectedEvent builds and publishes an event to the EventRouter.
 func DisconnectedEvent(p Pin) {
-	var DE events.Event
-	var disc events.EventInfo
-
 	//Get Hostname, Building, Room and Device
 	hostname := os.Getenv("PI_HOSTNAME")
 	roomInfo := strings.Split(hostname, "-")
 	building := roomInfo[0]
 	room := roomInfo[1]
-	device := roomInfo[2]
 
-	disc.Type = events.DIVISION
-	disc.Requestor = hostname
-	disc.EventCause = events.ROOMDIVISION
-	disc.Device = device
-	disc.EventInfoKey = "disconnect"
-	disc.EventInfoValue = p.Preset
+	roomStuff := events.BasicRoomInfo{
+		BuildingID: building,
+		RoomID:     room,
+	}
 
-	DE.Hostname = hostname
-	DE.Timestamp = time.Now().Format(time.RFC3339)
-	DE.LocalEnvironment = true
-	DE.Event = disc
-	DE.Building = building
-	DE.Room = room
+	deviceInfo := events.BasicDeviceInfo{
+		BasicRoomInfo: roomStuff,
+		DeviceID:      hostname,
+	}
+
+	event := events.Event{
+		GeneratingSystem: hostname,
+		Timestamp:        time.Now(),
+		AffectedRoom:     roomStuff,
+		TargetDevice:     deviceInfo,
+		Key:              "disconnect",
+		Value:            p.Preset,
+		User:             hostname,
+	}
 
 	log.L.Debugf("Disconnecting these rooms: %s", p.Preset)
-	EN.PublishEvent(events.RoomDivide, DE)
+	EN.PublishEvent(events.RoomDivide, event)
 }
