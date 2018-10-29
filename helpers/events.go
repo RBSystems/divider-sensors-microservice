@@ -1,6 +1,7 @@
 package helpers
 
 import (
+	"fmt"
 	"os"
 	"strings"
 	"time"
@@ -12,20 +13,13 @@ import (
 // ConnectedEvent builds and publishes an event to the EventRouter.
 func ConnectedEvent(p Pin) {
 	//Get Hostname, Building, Room and Device
-	hostname := os.Getenv("PI_HOSTNAME")
+	hostname := os.Getenv("SYSTEM_ID")
 	roomInfo := strings.Split(hostname, "-")
-	building := roomInfo[0]
-	room := roomInfo[1]
+	roomID := fmt.Sprintf("%s-%s", roomInfo[0], roomInfo[1])
 
-	roomStuff := events.BasicRoomInfo{
-		BuildingID: building,
-		RoomID:     room,
-	}
+	roomStuff := events.GenerateBasicRoomInfo(roomID)
 
-	deviceInfo := events.BasicDeviceInfo{
-		BasicRoomInfo: roomStuff,
-		DeviceID:      hostname,
-	}
+	deviceInfo := events.GenerateBasicDeviceInfo(hostname)
 
 	event := events.Event{
 		GeneratingSystem: hostname,
@@ -37,29 +31,22 @@ func ConnectedEvent(p Pin) {
 		User:             hostname,
 	}
 
-	event.EventTags = append(event.EventTags, events.RoomDivide, "LocalEnv")
+	event.AddToTags("LocalEnv", events.RoomDivide)
 
 	log.L.Debugf("Connecting these rooms: %s", p.Preset)
-	EN.PublishEvent(events.RoomDivide, event)
+	SendEvent(event)
 }
 
 // DisconnectedEvent builds and publishes an event to the EventRouter.
 func DisconnectedEvent(p Pin) {
 	//Get Hostname, Building, Room and Device
-	hostname := os.Getenv("PI_HOSTNAME")
+	hostname := os.Getenv("SYSTEM_ID")
 	roomInfo := strings.Split(hostname, "-")
-	building := roomInfo[0]
-	room := roomInfo[1]
+	roomID := fmt.Sprintf("%s-%s", roomInfo[0], roomInfo[1])
 
-	roomStuff := events.BasicRoomInfo{
-		BuildingID: building,
-		RoomID:     room,
-	}
+	roomStuff := events.GenerateBasicRoomInfo(roomID)
 
-	deviceInfo := events.BasicDeviceInfo{
-		BasicRoomInfo: roomStuff,
-		DeviceID:      hostname,
-	}
+	deviceInfo := events.GenerateBasicDeviceInfo(hostname)
 
 	event := events.Event{
 		GeneratingSystem: hostname,
@@ -71,6 +58,8 @@ func DisconnectedEvent(p Pin) {
 		User:             hostname,
 	}
 
+	event.AddToTags("LocalEnv", events.RoomDivide)
+
 	log.L.Debugf("Disconnecting these rooms: %s", p.Preset)
-	EN.PublishEvent(events.RoomDivide, event)
+	SendEvent(event)
 }

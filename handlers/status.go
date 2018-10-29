@@ -43,7 +43,7 @@ func AllPinStatus(context echo.Context) error {
 		}
 	}
 
-	status.Name, status.Values = helpers.EN.Node.GetState()
+	status.Values = helpers.Messenger.GetState()
 
 	log.L.Debugf("Success")
 	return context.JSON(http.StatusOK, status)

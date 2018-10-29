@@ -6,7 +6,10 @@ import (
 	"sync"
 
 	"github.com/byuoitav/authmiddleware"
-	"github.com/byuoitav/common/v2/events"
+	"github.com/byuoitav/central-event-system/hub/base"
+	"github.com/byuoitav/central-event-system/messenger"
+	"github.com/byuoitav/common/log"
+	"github.com/byuoitav/common/nerr"
 	"github.com/byuoitav/divider-sensors-microservice/handlers"
 	"github.com/byuoitav/divider-sensors-microservice/helpers"
 	"github.com/labstack/echo"
@@ -28,8 +31,12 @@ func main() {
 		MaxHeaderBytes: 1024 * 10,
 	}
 
-	filters := []string{}
-	helpers.SetEventNode(events.NewEventNode("RoomDivide", os.Getenv("EVENT_ROUTER_ADDRESS"), filters))
+	var err *nerr.E
+	helpers.Messenger, err = messenger.BuildMessenger(os.Getenv("HUB_ADDRESS"), base.Messenger, 1000)
+	if err != nil {
+		log.L.Errorf("there was an error building the messenger: ", err.String())
+		return
+	}
 
 	//Status endpoints
 	secure.GET("/status", handlers.AllPinStatus)

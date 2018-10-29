@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io/ioutil"
 
+	"github.com/byuoitav/central-event-system/messenger"
 	"github.com/byuoitav/common/log"
 
 	"net/http"
@@ -20,16 +21,11 @@ const CONNECTED = 1
 // DISCONNECTED represents the signal sent by the sensors when the rooms are disconnected.
 const DISCONNECTED = 0
 
-// EN is the EventNode object used to publish events.
-var EN *events.EventNode
+// Messenger is the EventNode object used to publish events.
+var Messenger *messenger.Messenger
 
 // DC is the divider config for this pi
 var DC DividerConfig
-
-// SetEventNode sets the EventNode object used by the microservice.
-func SetEventNode(en *events.EventNode) {
-	EN = en
-}
 
 // StartReading sets up which pins to read from, and begins reading.
 func StartReading(wg *sync.WaitGroup) {
@@ -126,12 +122,7 @@ func SendEvent(e events.Event) error {
 	log.L.Infof("Sending event: %+s", e)
 
 	// send the event
-	// TODO (?) make a routing table for this type -> the ui's
-	err := EN.PublishEvent(events.RoomDivide, e)
-	if err != nil {
-		log.L.Errorf("failed to publish event: %s", err)
-		return err
-	}
+	Messenger.SendEvent(e)
 
 	return nil
 }
